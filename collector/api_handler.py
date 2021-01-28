@@ -30,3 +30,5 @@ class APIHandler:
                 if int(time.time() - start) % api.freq == 0:
                     res = requests.get(api.url)
                     self.api_data[i] = res.text
+
+    #TODO Define api parsers
