@@ -1,5 +1,5 @@
 import time
-#import face_detection as fr
+import face_detection as fr
 import cv2 as cv
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
@@ -7,9 +7,12 @@ from skimage.metrics import structural_similarity as ssim
 cap = cv.VideoCapture(0)
 in_home = False
 _, bg_filter = cap.read()
-bg_shape = (0,0)
 frame_time = time.time()
 bg_time = time.time()
+detecting = False
+
+known_faces = []
+known_names = []
 
 # Generate a unique id for a user
 def generate_uid():
@@ -21,17 +24,15 @@ def generate_uid():
 
 # Apply image adjustments for processing
 def process_image(frame):
-    global bg_shape
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    #gray = cv.resize(gray, bg_shape)
+    gray = cv.resize(gray, (0,0), fx=0.25, fy=0.25))
     gray = cv.GaussianBlur(gray, (13, 13), 0)
     return gray
 
 # Get an idle image to watch for
 def create_filter():
-    global bg_filter, bg_shape
+    global bg_filter
     _, frame = cap.read()
-    bg_shape = frame.shape
     bg_filter = process_image(frame)
     return 0
 
@@ -60,14 +61,31 @@ def idle(change_count):
 
 # Find faces in video feed
 def detect():
-    return []
+    global detecting, frame_time
+    _, frame_bgr = cap.read()
+    frame_bgr = cv.resize(frame_bgr, (0, 0), fx=0.25, fy=0.25)
+    frame = frame_bgr[:, :, ::-1]
+    name = "Unknown"
+    if time.time() - frame_time > 1/10:
+        face_loc = fr.face_locations(frame)
+        face_enc = fr.face_encodings(frame, face_loc)
+
+        for face in face_enc:
+            matches = fr.compare_faces(known_faces, face)
+
+            if True in matches:
+                first_match = matches.index(True)
+                name = known_faces[first_match]
+                detecting = False
+    
+    return name
 
 # Scan a new face
 def scan():
     return 0
 
 # Greet existing user
-def greet(faces):
+def greet(name):
     return 0
 
 create_filter()
@@ -77,17 +95,19 @@ while True:
     if in_home:
         continue
     
-    if idle(change_count):
+    if not detecting and idle(change_count):
         change_count = 0
         continue
-    else:
+    elif not detecting:
         change_count += 1
 
-    if change_count > 30:
-        faces = detect()
-
-        if len(faces) == 0:
+    if change_count > 30 and detecting:
+        detecting = True
+        frame_time = time.time()
+        name = detect()
+    elif chane_count > 30:
+        if name != "Unknown":
             scan()
         else:
             in_home = True
-            greet(faces)
+            greet(name)
