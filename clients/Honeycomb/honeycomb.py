@@ -154,6 +154,7 @@ while True:
         else:
             in_home = True
             greet(name)
+        scanning = False
     elif not idle(change_count):
         change_count += 1
         if change_count > 30:
