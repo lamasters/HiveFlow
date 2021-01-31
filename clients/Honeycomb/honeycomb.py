@@ -24,7 +24,7 @@ def load_users():
         user_id = user.split(',')[0]
         user_name = user.split(',')[1]
         for i in range(5):
-            user_face = fr.load_image_file('./' + user_id + '/' + user_id + '_' + str(i) + '.jpg')
+            user_face = fr.load_image_file('./user_images/' + user_id + '/' + user_id + '_' + str(i) + '.jpg')
             known_faces.append(fr.face_encodings(user_face)[0])
             known_names.append(user_name)
 
