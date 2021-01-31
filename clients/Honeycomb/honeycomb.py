@@ -1,4 +1,4 @@
-import time
+import os, time
 import face_detection as fr
 import cv2 as cv
 import numpy as np
@@ -10,6 +10,7 @@ _, bg_filter = cap.read()
 frame_time = time.time()
 bg_time = time.time()
 detecting = False
+scanning = False
 
 known_faces = []
 known_names = []
@@ -96,6 +97,33 @@ def detect():
 
 # Scan a new face
 def scan():
+    user_id = str(generate_uid())
+    user_name = input("Enter name: ")
+    os.mkdir('./user_images/' + user_id)
+
+    print("Look to the center")
+    time.sleep(5)
+    _, frame = cap.read()
+    cv.imwrite('./user_images/' + user_id + '/' + user_id + '_0.jpg', frame)
+    print("Look to the left")
+    time.sleep(5)
+    _, frame = cap.read()
+    cv.imwrite('./user_images/' + user_id + '/' + user_id + '_1.jpg', frame)
+    print("Look to the right")
+    time.sleep(5)
+    _, frame = cap.read()
+    cv.imwrite('./user_images/' + user_id + '/' + user_id + '_2.jpg', frame)
+    print("Look to the top")
+    time.sleep(5)
+    _, frame = cap.read()
+    cv.imwrite('./user_images/' + user_id + '/' + user_id + '_3.jpg', frame)
+    print("Look to the bottom")
+    time.sleep(5)
+    _, frame = cap.read()
+    cv.imwrite('./user_images/' + user_id + '/' + user_id + '_4.jpg', frame)
+
+    f = open('./users.dat', 'a')
+    f.write(user_id + ',' + user_name + '\n')
     return 0
 
 # Greet existing user
@@ -110,20 +138,27 @@ change_count = 0
 while True:
     if in_home:
         continue
-    
-    if not detecting and idle(change_count):
-        change_count = 0
-        continue
-    elif not detecting:
-        change_count += 1
 
-    if change_count > 30 and detecting:
-        detecting = True
-        frame_time = time.time()
-        name = detect()
-    elif chane_count > 30:
+    if detecting:
+        if time.time() - detect_time > 10:
+            detecting = False
+            scanning = True
+        else:
+            name = detect()
+            if name != "Unknown":
+                detecing = False
+                scanning = True
+    elif scanning:
         if name != "Unknown":
             scan()
         else:
             in_home = True
             greet(name)
+    elif not idle(change_count):
+        change_count += 1
+        if change_count > 30:
+            detecting = True
+            frame_time = time.time()
+            detect_time = time.time()
+    else:
+        change_count = 0
