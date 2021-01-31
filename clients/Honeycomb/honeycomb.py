@@ -13,6 +13,20 @@ detecting = False
 
 known_faces = []
 known_names = []
+ids = []
+
+# Find face image files and load with associated names
+def load_users():
+    global known_faces, known_names
+    f = open('users.dat', 'r')
+    users = f.readlines()
+    for user in f.readlines():
+        user_id = user.split(',')[0]
+        user_name = user.split(',')[1]
+        for i in range(5):
+            user_face = fr.load_image_file('./' + user_id + '/' + user_id + '_' + str(i) + '.jpg')
+            known_faces.append(fr.face_encodings(user_face)[0])
+            known_names.append(user_name)
 
 # Generate a unique id for a user
 def generate_uid():
@@ -87,6 +101,8 @@ def scan():
 # Greet existing user
 def greet(name):
     return 0
+
+load_users()
 
 create_filter()
 change_count = 0
