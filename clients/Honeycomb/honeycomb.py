@@ -1,5 +1,5 @@
 import os, time
-import face_detection as fr
+import face_recognition as fr
 import cv2 as cv
 import numpy as np
 from skimage.metrics import structural_similarity as ssim
@@ -40,7 +40,7 @@ def generate_uid():
 # Apply image adjustments for processing
 def process_image(frame):
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    gray = cv.resize(gray, (0,0), fx=0.25, fy=0.25))
+    gray = cv.resize(gray, (0,0), fx=0.25, fy=0.25)
     gray = cv.GaussianBlur(gray, (13, 13), 0)
     return gray
 
